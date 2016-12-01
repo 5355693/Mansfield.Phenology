@@ -109,3 +109,12 @@ cp.bp %>%
                                                        axis.text.x = element_text(size = 12, angle = 305,
                                                                                   vjust = 0.5),
                                                        axis.title=element_text(size=18,face="bold"))
+
+arthro_points <- read.csv(file = "/Users/johnlloyd/GitHub/Mansfield.Phenology/Data/Arthropod_survey_data_point_data.csv",
+                          header = T, sep = ",")
+arthro_data <- read.csv(file = "/Users/johnlloyd/GitHub/Mansfield.Phenology/Data/Arthropod_survey_data_point_data.csv",
+                        header = T, sep = ",")
+
+
+
+
