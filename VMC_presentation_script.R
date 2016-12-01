@@ -57,15 +57,15 @@ cp.bp %>%
 cp.bp %>%
   mutate(Date = as.Date(Date, format = "%m/%d/%Y"))%>%
   group_by(Species, Date, BP) %>%
-  mutate(Condition = ifelse(BP == 0, "NB","Breeding"))%>%
+  mutate(Condition = ifelse(BP == 0, "NB", ifelse(BP == 4, "NB","Breeding")))%>%
   group_by(Species, Date, Condition)%>%
   summarize(N = n()) %>%
   mutate(Percentage = N/sum(N)) %>%
-  complete(Species, Date, Condition, fill = list(N = 0,Percentage = 0)) %>%
+  tidyr::complete(Species, Date, Condition, fill = list(N = 0,Percentage = 0)) %>%
   filter(Species == "BITH", Condition == "Breeding") %>%
   ggplot(., aes(x = Date, y = Percentage)) + geom_point() + stat_smooth(method="glm",
                                                                         method.args = list(family="binomial"), 
-                                                                        formula = y ~ ns(x, 3), level = 0.75) + 
+                                                                        formula = y ~ ns(x, 3), level = 0.4) + 
   ylab("Percentage of captured female Bicknell's\nThrush in breeding condition") + 
   scale_x_date(breaks = date_breaks("4 days")) + theme(axis.text.y = element_text(size = 12),
                                                        axis.text.x = element_text(size = 12, angle = 305,
@@ -95,11 +95,11 @@ cp.bp %>%
 cp.bp %>%
   mutate(Date = as.Date(Date, format = "%m/%d/%Y"))%>%
   group_by(Species, Date, BP) %>%
-  mutate(Condition = ifelse(BP == 0, "NB","Breeding"))%>%
+  mutate(Condition = ifelse(BP == 0, "NB", ifelse(BP == 4, "NB","Breeding")))%>%
   group_by(Species, Date, Condition)%>%
   summarize(N = n()) %>%
   mutate(Percentage = N/sum(N)) %>%
-  complete(Species, Date, Condition, fill = list(N = 0,Percentage = 0)) %>%
+  tidyr::complete(Species, Date, Condition, fill = list(N = 0,Percentage = 0)) %>%
   filter(Species == "WTSP", Condition == "Breeding") %>%
   ggplot(., aes(x = Date, y = Percentage)) + geom_point() + stat_smooth(method="glm",
                                                                         method.args = list(family="binomial"), 
@@ -112,9 +112,24 @@ cp.bp %>%
 
 arthro_points <- read.csv(file = "/Users/johnlloyd/GitHub/Mansfield.Phenology/Data/Arthropod_survey_data_point_data.csv",
                           header = T, sep = ",")
-arthro_data <- read.csv(file = "/Users/johnlloyd/GitHub/Mansfield.Phenology/Data/Arthropod_survey_data_point_data.csv",
+arthro_data <- read.csv(file = "/Users/johnlloyd/GitHub/Mansfield.Phenology/Data/Arthropod_survey_data_Survey_results.csv",
                         header = T, sep = ",")
+colnames(arthro_data) <- c("ID","Taxon","Size","Comment.1","Comment.2")
+colnames(arthro_points) <- c("Point_name","X_Coord","Y_Coord","Survey_date","Trap_type","Survey_no","ID",
+                             "Surveyor_initials","Foliage_type","Foliage_length","Foliage_width","Comments")
 
+arthro_joined <- left_join(arthro_points,arthro_data, by = "ID")
 
+arthro_joined %>%
+  #filter(Trap_type == "Foliage"|Trap_type == "Ground") %>%
+  mutate(Date = as.Date(Survey_date, format = "%m/%d/%Y")) %>%
+  group_by(Date, Point_name)%>%
+  summarize(Biomass = sum(as.numeric(Size)))%>%
+  ggplot(., aes(x = Date, y = Biomass)) + geom_smooth() + geom_point() +
+  ylab("Arthropod biomass index") + 
+  scale_x_date(breaks = date_breaks("7 days")) + theme(axis.text.y = element_text(size = 12),
+                                                       axis.text.x = element_text(size = 12, angle = 305,
+                                                                                  vjust = 0.5),
+                                                       axis.title=element_text(size=18,face="bold"))
 
 
